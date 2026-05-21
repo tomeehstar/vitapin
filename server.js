@@ -137,43 +137,54 @@ cron.schedule('* * * * *',()=>checkAndSend().catch(console.error));
 app.get('/',(req,res)=>res.json({status:'VitaPing backend running ✅',time:new Date().toISOString()}));
 
 app.post('/register',async(req,res)=>{
+  console.log('📥 Register request received:', JSON.stringify(req.body).slice(0,200));
   const{playerId,schedule}=req.body;
-  if(!playerId||!schedule)return res.status(400).json({error:'Missing data'});
+  if(!playerId){
+    console.error('❌ Missing playerId');
+    return res.status(400).json({error:'Missing playerId'});
+  }
+  if(!schedule){
+    console.error('❌ Missing schedule');
+    return res.status(400).json({error:'Missing schedule'});
+  }
   try{
     const tags={
       name:schedule.name||'Friend',
-      has_drugs:schedule.sel?.drug?'1':'0',
-      has_water:schedule.sel?.water?'1':'0',
-      has_meal:schedule.sel?.meal?'1':'0',
-      has_period:schedule.sel?.period?'1':'0',
+      has_drugs:schedule.sel&&schedule.sel.drug?'1':'0',
+      has_water:schedule.sel&&schedule.sel.water?'1':'0',
+      has_meal:schedule.sel&&schedule.sel.meal?'1':'0',
+      has_period:schedule.sel&&schedule.sel.period?'1':'0',
       water_start:schedule.waterStart||'07:00',
       water_end:schedule.waterEnd||'21:00',
-      meal_b:schedule.meals?.b||'08:00',
-      meal_l:schedule.meals?.l||'13:00',
-      meal_d:schedule.meals?.d||'19:00',
+      meal_b:schedule.meals&&schedule.meals.b||'08:00',
+      meal_l:schedule.meals&&schedule.meals.l||'13:00',
+      meal_d:schedule.meals&&schedule.meals.d||'19:00',
       last_period:schedule.lastPeriod||'',
       cycle_len:String(schedule.cycleLen||28),
     };
-    if(schedule.drugs?.length){
+    if(schedule.drugs&&schedule.drugs.length){
       schedule.drugs.forEach((drug,i)=>{
         const n=i+1;
-        tags[`drug${n}_name`]=drug.name;
-        tags[`drug${n}_food`]=drug.food;
-        tags[`drug${n}_dur`]=String(drug.dur);
-        tags[`drug${n}_start`]=drug.start;
-        drug.times.forEach((t,ti)=>{ tags[`drug${n}_t${ti+1}`]=t; });
+        tags['drug'+n+'_name']=drug.name||'';
+        tags['drug'+n+'_food']=drug.food||'any';
+        tags['drug'+n+'_dur']=String(drug.dur||30);
+        tags['drug'+n+'_start']=drug.start||new Date().toISOString().split('T')[0];
+        if(drug.times&&drug.times.length){
+          drug.times.forEach((t,ti)=>{tags['drug'+n+'_t'+(ti+1)]=t;});
+        }
       });
     }
-    await axios.put(
-      `https://onesignal.com/api/v1/players/${playerId}`,
+    console.log('📤 Sending tags to OneSignal for player:', playerId);
+    const response = await axios.put(
+      'https://onesignal.com/api/v1/players/'+playerId,
       {app_id:ONESIGNAL_APP_ID,tags},
-      {headers:{'Content-Type':'application/json','Authorization':`Basic ${ONESIGNAL_API_KEY}`}}
+      {headers:{'Content-Type':'application/json','Authorization':'Basic '+ONESIGNAL_API_KEY}}
     );
-    console.log(`✅ Registered: ${tags.name}`);
-    res.json({success:true,message:`Registered ${tags.name}`});
+    console.log('✅ Registered:', tags.name, '— OneSignal response:', response.status);
+    res.json({success:true,message:'Registered '+tags.name});
   }catch(e){
-    console.error('Register error:',e.message);
-    res.status(500).json({error:'Registration failed'});
+    console.error('Register error:',e.response?e.response.data:e.message);
+    res.status(500).json({error:'Registration failed',detail:e.message});
   }
 });
 

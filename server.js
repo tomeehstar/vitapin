@@ -10,26 +10,66 @@ app.use(express.json());
 const ONESIGNAL_APP_ID = '533fd092-0f2f-448a-bc77-3ba7f663e5ab';
 const ONESIGNAL_API_KEY = process.env.ONESIGNAL_API_KEY;
 
-// ── MESSAGES ──
+// ── MESSAGES — Clean funny English ──
 const DM = {
-  morning: (n,d) => [`Good morning ${n} 🌅 Time for your ${d} — start the day right!`,`Rise and shine ${n}! Your ${d} is waiting 💊`,`Morning ${n}! Don't forget your ${d} 💪`],
-  afternoon: (n,d) => [`Hey ${n}, your ${d} is due! Oya take it now 💊`,`Afternoon check ${n} — time for your ${d}. Don't skip!`,`${n} 2 seconds — take your ${d} now! 💊`],
-  evening: (n,d) => [`Good evening ${n} 🌙 Last dose today — your ${d}`,`${n} before you sleep, take your ${d} 💊`,`Evening ${n}! Last ${d} for today 🌙`]
+  morning: (n,d) => [
+    `Good morning ${n}! Your ${d} is waiting — don't leave home without it 💊`,
+    `Rise and shine ${n}! 3 seconds, one tablet, and you're done 💪`,
+    `${n}, your body called — it needs its ${d} right now 💊`
+  ],
+  afternoon: (n,d) => [
+    `Hey ${n}, your ${d} is giving you the side eye 👀 Take it now!`,
+    `Afternoon check ${n} — your ${d} hasn't taken itself yet 💊`,
+    `${n}! Your ${d} has been waiting patiently. Don't disappoint it 😄`
+  ],
+  evening: (n,d) => [
+    `Last one for today ${n} — take your ${d} before you sleep 🌙`,
+    `${n}, don't let the night swallow your ${d} reminder 💊`,
+    `Almost bedtime ${n}! Take your ${d} and rest well 🌙`
+  ]
 };
 const WM = (n,h) => {
-  if(h<10) return [`Good morning ${n}! Start with a full glass of water 💧`,`${n} wake up! Drink water before your phone 💧`,`Morning ${n}! Your body dey thirsty — hydrate! 💧`];
-  if(h<14) return [`Oya ${n}, hydration check! One glass now 💧`,`${n} you don forget water o! 3 seconds — drink am now 😄💧`,`Quick water break ${n} — dehydration dey cause headache! 💧`];
-  if(h<18) return [`Afternoon ${n} — stay hydrated! 💧`,`${n} water time! No dulling 💧`,`Halfway through the day ${n} — drink water 💧`];
-  return [`Evening ${n} — keep drinking water 💧`,`${n} last few water reminders today — drink up! 💧`,`Almost bedtime ${n}! One more glass 💧`];
+  if(h<10) return [
+    `Good morning ${n}! Your body is 60% water and right now it's judging you 😂💧`,
+    `${n}, drink water before you check your phone. Yes, before! 💧`,
+    `Water first, everything else second ${n} — your body will thank you 💧`
+  ];
+  if(h<14) return [
+    `${n}, hydration check! Your brain works better when you're not a raisin 😂💧`,
+    `${n} — one glass of water. That's it. You can do this 💧`,
+    `Halfway through the day ${n} — drink water or regret it later 💧`
+  ];
+  if(h<18) return [
+    `${n}, afternoon water break! Your body has been working hard 💧`,
+    `Hey ${n} — your water reminder is here. One glass, right now 💧`,
+    `${n}, staying hydrated keeps headaches away — drink up! 💧`
+  ];
+  return [
+    `${n}, last few water reminders today — finish strong 💧`,
+    `Almost bedtime ${n}! One more glass before you sleep 💧`,
+    `${n}, your body worked hard today — reward it with water 💧`
+  ];
 };
 const MM = {
-  b: (n) => [`Good morning ${n}! Go chop breakfast — your body needs fuel 🍳`,`${n} you never chop since morning? Abeg eat! 😄🍽`,`Breakfast time ${n}! Don't skip 🍳`],
-  l: (n) => [`Lunchtime ${n}! No be only work — go chop 😄🍽`,`Oya ${n} your stomach don complain — go eat lunch 🍽`,`${n} lunch break — your body deserves it 🍽`],
-  d: (n) => [`Dinner time ${n} 🌙 Eat well and rest tonight`,`${n} wrap up the day — eat your dinner 🍽`,`Evening meal time ${n}! Chop well so you sleep well 🌙`]
+  b: (n) => [
+    `Good morning ${n}! Your breakfast won't eat itself 🍳`,
+    `${n}, skipping breakfast is not a personality trait — go eat! 😄🍳`,
+    `${n}! Fuel up before the day takes everything you've got 🍳`
+  ],
+  l: (n) => [
+    `Lunchtime ${n}! Step away from the screen and go eat 😄🍽`,
+    `${n}, your stomach filed a formal complaint — lunch is overdue 🍽`,
+    `${n}, it's afternoon — feed yourself before you make bad decisions 😂🍽`
+  ],
+  d: (n) => [
+    `Dinner time ${n}! End the day properly 🌙🍽`,
+    `${n}, your day isn't complete without dinner — go eat well 🍽`,
+    `${n}! Eat your dinner so you can sleep like a baby tonight 🌙`
+  ]
 };
 const PM = (n,days) => days<=1
-  ? `Hey ${n} 🌸 Your period may arrive today or tomorrow. Take care 💕`
-  : `Hey ${n} 🌸 Your period may be coming in ${days} days. Stay prepared!`;
+  ? `Hey ${n} 🌸 Your period may arrive today or tomorrow. Take care of yourself and stock up!`
+  : `Hey ${n} 🌸 Just a friendly heads up — your period may be arriving in ${days} days. Stay prepared!`;
 
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function toMins(t){if(!t)return -1;const[h,m]=t.split(':').map(Number);return h*60+m;}

@@ -219,7 +219,7 @@ async function checkAndSend(){
           if(!dt) continue;
           const diff = Math.abs(toMins(dt)-cur);
           console.log(`  💊 ${drug.name} at ${dt}(${toMins(dt)}mins) | now=${cur}mins | diff=${diff}`);
-          if(diff<=1){
+          if(diff<=3){
             const tod=h<12?'morning':h<17?'afternoon':'evening';
             await sendToUser(`💊 VitaPing — ${drug.name}`,pick(DM[tod](name,drug.name))+fn,id);
           }
@@ -233,7 +233,7 @@ async function checkAndSend(){
       const we=toMins(S.waterEnd||'21:00');
       console.log(`  💧 Water: ${S.waterStart}-${S.waterEnd} | now=${cur}mins`);
       if(cur>=ws && cur<=we){
-        if((cur-ws)%120<=1){
+        if((cur-ws)%120<=3){
           await sendToUser('💧 VitaPing',pick(WM(name,h)),id);
         }
       }
@@ -246,7 +246,7 @@ async function checkAndSend(){
         if(!mt) continue;
         const diff=Math.abs(toMins(mt)-cur);
         console.log(`  🍽 ${map[key]} at ${mt}(${toMins(mt)}mins) | now=${cur}mins | diff=${diff}`);
-        if(diff<=1){
+        if(diff<=3){
           await sendToUser(`🍽 VitaPing — ${map[key]}`,pick(MM[key](name)),id);
         }
       }
